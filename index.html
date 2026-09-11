@@ -30,15 +30,12 @@
     fn.component.layout.set({
         name : 'input',
         layout : function(opt = {}) {
-            var input = fn.element.create({
+            return fn.element.create({
                 tagName : 'input',
                 attribute : { type : opt.field.form.type, name : opt.field.name, placeholder : opt.field.form.placeholder || '' },
                 style : { display : 'block', width : '100%', marginBottom : '8px', padding : '6px' },
+                value : opt.value,
             });
-            if (opt.value !== undefined) {
-                input.value = opt.value;
-            }
-            return input;
         }
     });
 

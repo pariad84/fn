@@ -37,6 +37,9 @@
         if (opt.text) {
             el.textContent = opt.text;
         }
+        if (opt.value !== undefined) {
+            el.value = opt.value;
+        }
         if (opt.event) {
             for (const [eventType, eventHandler] of Object.entries(opt.event)) {
                 el.addEventListener(eventType, eventHandler);
