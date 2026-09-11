@@ -15,7 +15,7 @@ or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. on its own --
 conventions each app built on top implements for itself. This repo also carries `fn.layout.js`,
 a reference implementation of those conventions:
 
-- `button` -- the base `<button type="button">` layout; `close-btn`/`save-btn`/`new-btn` are all
+- `button` -- the base `<button type="button">` layout; `close-btn`/`save-btn` are both
   `fn.component.create({ name : 'button', ... })` calls that just supply text/attribute/event.
 - `popup`/`close-btn`/`save-btn` -- `popup` provides the `.__popup` wrapper and header that
   `close-btn`/`save-btn` find via `e.target.closest('.__popup')` and act on directly, with no
@@ -24,8 +24,6 @@ a reference implementation of those conventions:
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field, via `fn.data.insert`/`update`) and a
   table-based list (one row per item, via `fn.data.select`) built on top of those field layouts.
-- `new-btn` -- a button that opens a `popup` with a blank `form`/`save-btn`, then refreshes
-  `opt.caller` (typically a `list`) on save.
 
 ## Using it
 

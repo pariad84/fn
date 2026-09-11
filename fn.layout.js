@@ -229,27 +229,4 @@
             return el;
         }
     });
-
-    fn.component.layout.set({
-        name : 'new-btn',
-        layout : function(opt = {}) {
-            return fn.component.create({
-                name : 'button',
-                text : opt.text || '+ New item',
-                style : { padding : '8px 16px', marginBottom : '12px' },
-                event : { click : function() {
-                    fn.component.create({
-                        name : 'popup',
-                        title : opt.title || 'New item',
-                        caller : opt.caller,
-                        fields : opt.fields,
-                        render : function(popupEl) {
-                            fn.component.create({ name : 'form', fields : popupEl._.fields, data : {}, parent : popupEl.content });
-                            fn.component.create({ name : 'save-btn', parent : popupEl.content });
-                        },
-                    });
-                } },
-            });
-        }
-    });
 })();
