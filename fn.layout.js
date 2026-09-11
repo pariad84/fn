@@ -121,7 +121,15 @@
                                 fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
                             },
                             render : function(popupOpt) {
-                                fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : {}, parent : popupOpt.content });
+                                fn.component.create({
+                                    name : 'form',
+                                    fields : popupOpt.popup._.fields,
+                                    data : {},
+                                    parent : popupOpt.content,
+                                    save : function(data) {
+                                        return fn.data.insert({ key : 'item', data : data });
+                                    },
+                                });
                             },
                         });
                     }
@@ -208,10 +216,7 @@
                 opt.fields.forEach(function(field) {
                     data[field.name] = el._.inputs[field.name].value;
                 });
-                if (el._.data.id !== undefined) {
-                    return fn.data.update({ key : 'item', id : el._.data.id, data : data });
-                }
-                return fn.data.insert({ key : 'item', data : data });
+                return opt.save(data);
             };
 
             return el;
@@ -251,7 +256,15 @@
                                     fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
                                 },
                                 render : function(popupOpt) {
-                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
+                                    fn.component.create({
+                                        name : 'form',
+                                        fields : popupOpt.popup._.fields,
+                                        data : item,
+                                        parent : popupOpt.content,
+                                        save : function(data) {
+                                            return fn.data.update({ key : 'item', id : item.id, data : data });
+                                        },
+                                    });
                                 },
                             });
                         } },
