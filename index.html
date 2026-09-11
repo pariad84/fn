@@ -40,13 +40,43 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                 title : 'List',
                 fields : fields,
                 init : function(opt) {
-                    fn.component.create({ name : 'btn-new', parent : opt.header });
+                    fn.component.create({
+                        name : 'btn-new',
+                        parent : opt.header,
+                        click : function() {
+                            fn.component.create({
+                                name : 'popup',
+                                title : 'New item',
+                                caller : opt.popup._.caller,
+                                fields : fields,
+                                parent : document.body,
+                                init : function(popupOpt) {
+                                    fn.component.create({
+                                        name : 'btn-save',
+                                        text : '💾',
+                                        parent : popupOpt.header,
+                                        save : function(data) {
+                                            return fn.data.insert({ key : 'item', data : data });
+                                        },
+                                    });
+                                },
+                                render : function(popupOpt) {
+                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : {}, parent : popupOpt.content });
+                                },
+                            });
+                        },
+                    });
                 },
                 render : function(opt) {
                     opt.popup._.caller = fn.component.create({
                         name : 'list',
                         fields : opt.popup._.fields,
                         parent : opt.content,
+                        select : function() {
+                            return fn.data.select({ key : 'item' }).map(function(row) {
+                                return Object.assign({ id : row.id }, row.data);
+                            });
+                        },
                         click : function(item, list) {
                             fn.component.create({
                                 name : 'popup',
@@ -55,18 +85,17 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                                 fields : fields,
                                 parent : document.body,
                                 init : function(popupOpt) {
-                                    fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
-                                },
-                                render : function(popupOpt) {
                                     fn.component.create({
-                                        name : 'form',
-                                        fields : popupOpt.popup._.fields,
-                                        data : item,
-                                        parent : popupOpt.content,
+                                        name : 'btn-save',
+                                        text : '💾',
+                                        parent : popupOpt.header,
                                         save : function(data) {
                                             return fn.data.update({ key : 'item', id : item.id, data : data });
                                         },
                                     });
+                                },
+                                render : function(popupOpt) {
+                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
                                 },
                             });
                         },

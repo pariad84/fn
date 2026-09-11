@@ -26,6 +26,9 @@
                     overflow : 'hidden',
                 },
             });
+            // capture, not bubble: must run before a click on e.g. btn-new appends a new popup,
+            // otherwise re-fronting this popup afterward (on bubble) would bury that new one.
+            popup.addEventListener('click', function() { fn.util.toFront({ el : popup }); }, true);
 
             var header = fn.element.create({
                 parent : popup,
@@ -113,7 +116,7 @@
                     click : function(e) {
                         var popup = e.target.closest('.__popup');
                         var form = popup.querySelector('.__form');
-                        form.save();
+                        opt.save(form.save());
                         if (popup._.caller) {
                             popup._.caller.refresh();
                         }
@@ -131,32 +134,7 @@
                 name : 'button',
                 attribute : { title : 'New item' },
                 text : '✏️',
-                event : {
-                    click : function(e) {
-                        var popup = e.target.closest('.__popup');
-                        fn.component.create({
-                            parent : document.body,
-                            name : 'popup',
-                            title : 'New item',
-                            caller : popup._.caller,
-                            fields : popup._.fields,
-                            init : function(popupOpt) {
-                                fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
-                            },
-                            render : function(popupOpt) {
-                                fn.component.create({
-                                    name : 'form',
-                                    fields : popupOpt.popup._.fields,
-                                    data : {},
-                                    parent : popupOpt.content,
-                                    save : function(data) {
-                                        return fn.data.insert({ key : 'item', data : data });
-                                    },
-                                });
-                            },
-                        });
-                    }
-                },
+                event : { click : function() { opt.click(); } },
             });
         }
     });
@@ -239,7 +217,7 @@
                 opt.fields.forEach(function(field) {
                     data[field.name] = el._.inputs[field.name].value;
                 });
-                return opt.save(data);
+                return data;
             };
 
             return el;
@@ -260,9 +238,7 @@
 
             el.refresh = function() {
                 Array.from(tbody.children).forEach(function(child) { child.remove(); });
-                var items = fn.data.select({ key : 'item' }).map(function(row) {
-                    return Object.assign({ id : row.id }, row.data);
-                });
+                var items = opt.select();
                 items.forEach(function(item) {
                     var tr = fn.element.create({
                         tagName : 'tr',

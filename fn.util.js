@@ -62,4 +62,13 @@
             e.stopPropagation();
         });
     };
+
+    // fn.util.toFront -- moves opt.el to be the last child of its parent, so it stacks above
+    // its siblings by DOM order alone (no z-index).
+    fn.util.toFront = function(opt = {}) {
+        var el = opt.el;
+        if (el.parentNode) {
+            el.parentNode.appendChild(el);
+        }
+    };
 })();
