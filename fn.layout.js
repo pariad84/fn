@@ -49,9 +49,6 @@
                 opt.render({ popup : popup, header : header, content : content });
             }
 
-            if (opt.parent) {
-                opt.parent.appendChild(popup);
-            }
             return popup;
         }
     });
