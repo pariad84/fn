@@ -41,7 +41,8 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                 init : function(opt) {
                     fn.component.create({
                         name : 'button',
-                        text : '+ New item',
+                        attribute : { title : 'New item' },
+                        text : '+',
                         parent : opt.header,
                         event : { click : function() {
                             fn.component.create({

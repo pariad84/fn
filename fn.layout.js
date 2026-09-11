@@ -85,7 +85,7 @@
             return fn.component.create({
                 name : 'button',
                 attribute : { title : 'Save' },
-                text : 'Save',
+                text : opt.text || 'Save',
                 event : {
                     click : function(e) {
                         var popup = e.target.closest('.__popup');
@@ -219,7 +219,7 @@
                                 fields : opt.fields,
                                 parent : document.body,
                                 init : function(popupOpt) {
-                                    fn.component.create({ name : 'save-btn', parent : popupOpt.header });
+                                    fn.component.create({ name : 'save-btn', text : '✓', parent : popupOpt.header });
                                 },
                                 render : function(popupOpt) {
                                     fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
