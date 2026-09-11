@@ -28,26 +28,11 @@ against a plain field-definition array -- this file only supplies data and app w
     ];
 
     var app = document.getElementById('app');
-    fn.element.create({
-        tagName : 'button',
-        attribute : { type : 'button' },
-        text : '+ New item',
-        style : { padding : '8px 16px', marginBottom : '12px' },
-        parent : app,
-        event : { click : function() {
-            fn.component.create({
-                name : 'popup',
-                title : 'New item',
-                caller : list,
-                fields : fields,
-                render : function(popupEl) {
-                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : {}, parent : popupEl.content });
-                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
-                },
-            });
-        } },
-    });
-    var list = fn.component.create({ name : 'list', fields : fields, parent : app });
+
+    var newBtnOpt = { name : 'new-btn', fields : fields, parent : app };
+    fn.component.create(newBtnOpt);
+
+    newBtnOpt.caller = fn.component.create({ name : 'list', fields : fields, parent : app });
 </script>
 </body>
 </html>

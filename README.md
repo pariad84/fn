@@ -22,6 +22,8 @@ a reference implementation of those conventions:
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field, via `fn.data.insert`/`update`) and a
   table-based list (one row per item, via `fn.data.select`) built on top of those field layouts.
+- `new-btn` -- a button that opens a `popup` with a blank `form`/`save-btn`, then refreshes
+  `opt.caller` (typically a `list`) on save.
 
 ## Using it
 
