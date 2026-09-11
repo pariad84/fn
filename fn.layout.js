@@ -73,7 +73,7 @@
             return fn.component.create({
                 name : 'button',
                 attribute : { title : 'Close' },
-                text : '✕',
+                text : '❌',
                 event : { click : function(e) { e.target.closest('.__popup').remove(); } },
             });
         }
@@ -219,7 +219,7 @@
                                 fields : opt.fields,
                                 parent : document.body,
                                 init : function(popupOpt) {
-                                    fn.component.create({ name : 'save-btn', text : '✓', parent : popupOpt.header });
+                                    fn.component.create({ name : 'save-btn', text : '💾', parent : popupOpt.header });
                                 },
                                 render : function(popupOpt) {
                                     fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
