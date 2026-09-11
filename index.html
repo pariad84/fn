@@ -28,7 +28,7 @@ against a plain field-definition array -- this file only supplies data and app w
     ];
 
     var list;
-    var page = [
+    var pages = [
         { type : 'button', text : '+ New item', style : { padding : '8px 16px', marginBottom : '12px' }, event : { click : function() {
             fn.component.create({
                 name : 'popup',
@@ -45,7 +45,7 @@ against a plain field-definition array -- this file only supplies data and app w
     ];
 
     var app = document.getElementById('app');
-    page.forEach(function(item) {
+    pages.forEach(function(item) {
         var el = fn.component.create(Object.assign({}, item, { name : item.type, parent : app }));
         if (item.type === 'list') {
             list = el;
