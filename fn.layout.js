@@ -29,9 +29,10 @@
             var header = fn.element.create({
                 parent : popup,
                 tagName : 'div',
-                style : { display : 'flex', alignItems : 'center', padding : '8px 12px', borderBottom : '1px solid #e4e6ea' },
+                style : { display : 'flex', alignItems : 'center', padding : '8px 12px', borderBottom : '1px solid #e4e6ea', cursor : 'move' },
             });
             fn.element.create({ parent : header, tagName : 'div', style : { fontWeight : '600', flex : '1' }, text : opt.title || 'Popup' });
+            fn.util.draggable({ el : popup, handle : header });
 
             var content = fn.element.create({ parent : popup, tagName : 'div', style : { padding : '12px' } });
 

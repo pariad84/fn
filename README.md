@@ -12,15 +12,17 @@ A minimal framework core: a single file, `fn.js`, providing four essentials --
 
 `fn.js` knows nothing about any specific app: it never references a resource key, a field name,
 or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. on its own -- those are
-conventions each app built on top implements for itself. This repo also carries `fn.layout.js`,
-a reference implementation of those conventions:
+conventions each app built on top implements for itself. This repo also carries `fn.util.js`, a
+DOM-interaction helper (currently just `fn.util.draggable`, letting one element drag another
+around by its `style.left`/`top`), and `fn.layout.js`, a reference implementation of those
+conventions:
 
 - `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new` are all
   `fn.component.create({ name : 'button', ... })` calls that just supply text/attribute/event.
 - `popup`/`btn-close`/`btn-save`/`btn-new` -- `popup` provides the `.__popup` wrapper and header
   that these find via `e.target.closest('.__popup')` and act on directly, with no caller-injected
   callback; `btn-new` reads `popup._.fields`/`popup._.caller` off that popup to open a blank-form
-  popup of its own.
+  popup of its own. The header is also the drag handle, via `fn.util.draggable`.
 - `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field, persisted by calling the `opt.save`
@@ -31,6 +33,7 @@ a reference implementation of those conventions:
 ## Using it
 
 Load `fn.js` as a plain `<script>` tag before your app's own script(s) -- it attaches to the
-global `fn` object. No build step, no dependencies. `fn.layout.js` is optional: load it right
-after `fn.js` to get themeable `popup`/`form`/`list`/etc. reference implementations instead of
-writing your own from scratch.
+global `fn` object. No build step, no dependencies. `fn.util.js` and `fn.layout.js` are both
+optional and load after `fn.js` (`fn.layout.js` needs `fn.util.js` loaded first, for
+`fn.util.draggable`): `fn.util.js` for small DOM helpers, `fn.layout.js` for themeable
+`popup`/`form`/`list`/etc. reference implementations instead of writing your own from scratch.
