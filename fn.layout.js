@@ -50,11 +50,24 @@
     });
 
     fn.component.layout.set({
-        name : 'close-btn',
+        name : 'button',
         layout : function(opt = {}) {
             return fn.element.create({
                 tagName : 'button',
-                attribute : { type : 'button', title : 'Close' },
+                attribute : Object.assign({ type : 'button' }, opt.attribute),
+                text : opt.text,
+                style : opt.style,
+                event : opt.event,
+            });
+        }
+    });
+
+    fn.component.layout.set({
+        name : 'close-btn',
+        layout : function(opt = {}) {
+            return fn.component.create({
+                name : 'button',
+                attribute : { title : 'Close' },
                 text : '✕',
                 event : { click : function(e) { e.target.closest('.__popup').remove(); } },
             });
@@ -64,9 +77,9 @@
     fn.component.layout.set({
         name : 'save-btn',
         layout : function(opt = {}) {
-            return fn.element.create({
-                tagName : 'button',
-                attribute : { type : 'button', title : 'Save' },
+            return fn.component.create({
+                name : 'button',
+                attribute : { title : 'Save' },
                 text : 'Save',
                 event : {
                     click : function(e) {
@@ -220,9 +233,8 @@
     fn.component.layout.set({
         name : 'new-btn',
         layout : function(opt = {}) {
-            return fn.element.create({
-                tagName : 'button',
-                attribute : { type : 'button' },
+            return fn.component.create({
+                name : 'button',
                 text : opt.text || '+ New item',
                 style : { padding : '8px 16px', marginBottom : '12px' },
                 event : { click : function() {
