@@ -42,7 +42,34 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                     fn.component.create({ name : 'btn-new', parent : opt.header });
                 },
                 render : function(opt) {
-                    opt.popup._.caller = fn.component.create({ name : 'list', fields : opt.popup._.fields, parent : opt.content });
+                    opt.popup._.caller = fn.component.create({
+                        name : 'list',
+                        fields : opt.popup._.fields,
+                        parent : opt.content,
+                        click : function(item, list) {
+                            fn.component.create({
+                                name : 'popup',
+                                title : 'Edit item',
+                                caller : list,
+                                fields : fields,
+                                parent : document.body,
+                                init : function(popupOpt) {
+                                    fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
+                                },
+                                render : function(popupOpt) {
+                                    fn.component.create({
+                                        name : 'form',
+                                        fields : popupOpt.popup._.fields,
+                                        data : item,
+                                        parent : popupOpt.content,
+                                        save : function(data) {
+                                            return fn.data.update({ key : 'item', id : item.id, data : data });
+                                        },
+                                    });
+                                },
+                            });
+                        },
+                    });
                 },
             });
         } },

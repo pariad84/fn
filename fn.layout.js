@@ -245,29 +245,7 @@
                         tagName : 'tr',
                         style : { cursor : 'pointer' },
                         parent : tbody,
-                        event : { click : function() {
-                            fn.component.create({
-                                name : 'popup',
-                                title : 'Edit item',
-                                caller : el,
-                                fields : opt.fields,
-                                parent : document.body,
-                                init : function(popupOpt) {
-                                    fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
-                                },
-                                render : function(popupOpt) {
-                                    fn.component.create({
-                                        name : 'form',
-                                        fields : popupOpt.popup._.fields,
-                                        data : item,
-                                        parent : popupOpt.content,
-                                        save : function(data) {
-                                            return fn.data.update({ key : 'item', id : item.id, data : data });
-                                        },
-                                    });
-                                },
-                            });
-                        } },
+                        event : { click : function() { opt.click(item, el); } },
                     });
                     opt.fields.forEach(function(field) {
                         fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });

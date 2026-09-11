@@ -24,8 +24,9 @@ a reference implementation of those conventions:
 - `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field, persisted by calling the `opt.save`
-  function its caller supplies) and a table-based list (one row per item, via `fn.data.select`)
-  built on top of those field layouts.
+  function its caller supplies) and a table-based list (one row per item, via `fn.data.select`,
+  each row's click calling the caller-supplied `opt.click(item, list)`) built on top of those
+  field layouts.
 
 ## Using it
 
