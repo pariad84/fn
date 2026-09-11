@@ -13,13 +13,19 @@ A minimal framework core: a single file, `fn.js`, providing four essentials --
 `fn.js` knows nothing about any specific app: it never references a resource key, a field name,
 or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. on its own -- those are
 conventions each app built on top implements for itself. This repo also carries `fn.layout.js`,
-a reference implementation of the `popup`/`close-btn`/`save-btn` convention (`popup` provides
-the `.__popup` wrapper and header that `close-btn`/`save-btn` find via
-`e.target.closest('.__popup')` and act on directly, with no caller-injected callback).
+a reference implementation of those conventions:
+
+- `popup`/`close-btn`/`save-btn` -- `popup` provides the `.__popup` wrapper and header that
+  `close-btn`/`save-btn` find via `e.target.closest('.__popup')` and act on directly, with no
+  caller-injected callback.
+- `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
+  to `input` for any type without its own layout).
+- `form`/`list` -- a schema-driven form (one row per field, via `fn.data.insert`/`update`) and a
+  table-based list (one row per item, via `fn.data.select`) built on top of those field layouts.
 
 ## Using it
 
 Load `fn.js` as a plain `<script>` tag before your app's own script(s) -- it attaches to the
 global `fn` object. No build step, no dependencies. `fn.layout.js` is optional: load it right
-after `fn.js` to get a themeable `popup`/`close-btn`/`save-btn` reference implementation instead
-of writing your own from scratch.
+after `fn.js` to get themeable `popup`/`form`/`list`/etc. reference implementations instead of
+writing your own from scratch.
