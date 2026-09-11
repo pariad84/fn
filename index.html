@@ -6,9 +6,8 @@
 </head>
 <body style="font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #1a1a1a;">
 <h1>fn.js + fn.layout.js</h1>
-<p>Wires up <code>fn.layout.js</code>'s <code>popup</code>/<code>close-btn</code>/<code>save-btn</code> and
-<code>input</code>/<code>select</code>/<code>radio</code>/<code>form</code>/<code>list</code> layouts
-against a plain field-definition array -- this file only supplies data and app wiring, no layouts.</p>
+<p>A single <code>button</code> opens a <code>popup</code> with a <code>list</code> inside it, all
+built from <code>fn.layout.js</code>'s conventions.</p>
 <div id="app"></div>
 <script src="fn.js"></script>
 <script src="fn.layout.js"></script>
@@ -27,29 +26,22 @@ against a plain field-definition array -- this file only supplies data and app w
         { name : 'datetime', label : 'Datetime', form : { type : 'datetime-local' }, list : { type : 'text' } },
     ];
 
-    var list;
-    var pages = [
-        { type : 'button', text : '+ New item', style : { padding : '8px 16px', marginBottom : '12px' }, event : { click : function() {
+    var app = document.getElementById('app');
+    fn.component.create({
+        name : 'button',
+        text : 'Open list',
+        style : { padding : '8px 16px' },
+        parent : app,
+        event : { click : function() {
             fn.component.create({
                 name : 'popup',
-                title : 'New item',
-                caller : list,
+                title : 'List',
                 fields : fields,
                 render : function(popupEl) {
-                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : {}, parent : popupEl.content });
-                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
+                    fn.component.create({ name : 'list', fields : popupEl._.fields, parent : popupEl.content });
                 },
             });
-        } } },
-        { type : 'list', fields : fields },
-    ];
-
-    var app = document.getElementById('app');
-    pages.forEach(function(item) {
-        var el = fn.component.create(Object.assign({}, item, { name : item.type, parent : app }));
-        if (item.type === 'list') {
-            list = el;
-        }
+        } },
     });
 </script>
 </body>
