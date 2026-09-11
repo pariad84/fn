@@ -23,6 +23,7 @@
                     borderRadius : '8px',
                     boxShadow : '0 8px 24px rgba(0, 0, 0, 0.15)',
                     font : "13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    overflow : 'hidden',
                 },
             });
 
@@ -34,7 +35,28 @@
             fn.element.create({ parent : header, tagName : 'div', style : { fontWeight : '600', flex : '1' }, text : opt.title || 'Popup' });
             fn.util.draggable({ el : popup, handle : header });
 
-            var content = fn.element.create({ parent : popup, tagName : 'div', style : { padding : '12px' } });
+            var content = fn.element.create({ parent : popup, tagName : 'div', style : { padding : '12px', flex : '1', overflow : 'auto' } });
+
+            fn.util.resizable({
+                el : popup,
+                handle : fn.element.create({
+                    parent : popup,
+                    tagName : 'div',
+                    text : '◢',
+                    style : {
+                        position : 'absolute',
+                        right : '2px',
+                        bottom : '0',
+                        width : '14px',
+                        height : '14px',
+                        lineHeight : '10px',
+                        fontSize : '10px',
+                        color : '#b7bcc4',
+                        cursor : 'nwse-resize',
+                        userSelect : 'none',
+                    },
+                }),
+            });
 
             popup._.header = header;
             popup._.content = content;

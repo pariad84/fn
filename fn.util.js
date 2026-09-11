@@ -31,4 +31,35 @@
             e.preventDefault();
         });
     };
+
+    // fn.util.resizable -- lets opt.handle grow/shrink opt.el by its style.width/height,
+    // clamped to opt.minWidth/opt.minHeight (default 150/80). Same attach-during-drag-only
+    // listener lifecycle as fn.util.draggable.
+    fn.util.resizable = function(opt = {}) {
+        var el = opt.el;
+        var handle = opt.handle;
+        var minWidth = opt.minWidth || 150;
+        var minHeight = opt.minHeight || 80;
+
+        handle.addEventListener('mousedown', function(e) {
+            var startX = e.clientX;
+            var startY = e.clientY;
+            var startWidth = el.offsetWidth;
+            var startHeight = el.offsetHeight;
+
+            var onMouseMove = function(e) {
+                el.style.width = Math.max(minWidth, startWidth + (e.clientX - startX)) + 'px';
+                el.style.height = Math.max(minHeight, startHeight + (e.clientY - startY)) + 'px';
+            };
+            var onMouseUp = function() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    };
 })();
