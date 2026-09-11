@@ -38,8 +38,8 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                 name : 'popup',
                 title : 'List',
                 fields : fields,
-                render : function(popupEl) {
-                    fn.component.create({ name : 'list', fields : popupEl._.fields, parent : popupEl.content });
+                render : function(opt) {
+                    fn.component.create({ name : 'list', fields : opt.popup._.fields, parent : opt.content });
                 },
             });
         } },

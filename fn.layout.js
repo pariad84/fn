@@ -219,9 +219,10 @@
                                 title : 'Edit item',
                                 caller : el,
                                 fields : opt.fields,
-                                render : function(popupEl) {
-                                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : item, parent : popupEl.content });
-                                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
+                                parent : document.body,
+                                render : function(popupOpt) {
+                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
+                                    fn.component.create({ name : 'save-btn', parent : popupOpt.content });
                                 },
                             });
                         } },
