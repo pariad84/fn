@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fn test page</title>
+</head>
+<body style="font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #1a1a1a;">
+<h1>fn.js + fn.layout.js</h1>
+<p>Exercises the core (<code>fn.element.create</code>, the layout registry, <code>fn.data.*</code>) and
+<code>popup</code>/<code>close-btn</code>/<code>save-btn</code> together, against a tiny hand-rolled
+<code>form</code>/<code>list</code> -- the schema-driven versions of those live in
+<a href="https://github.com/pariad84/mini-framework">mini-framework</a>, not here.</p>
+<div id="app"></div>
+<script src="fn.js"></script>
+<script src="fn.layout.js"></script>
+<script>
+
+    var fields = [
+        { name : 'text', label : 'Text', form : { type : 'text', placeholder : 'Text' }, list : { type : 'text' } },
+        { name : 'select', label : 'Select', form : { type : 'select', datas : [
+            { value : 'option1', label : 'Option 1' },
+            { value : 'option2', label : 'Option 2' }
+        ] }, list : { type : 'text' } },
+        { name : 'radio', label : 'Radio', form : { type : 'radio', datas : [
+            { value : 'radio1', label : 'Radio 1' },
+            { value : 'radio2', label : 'Radio 2' }
+        ] }, list : { type : 'text' } },
+        { name : 'datetime', label : 'Datetime', form : { type : 'datetime-local' }, list : { type : 'text' } },
+    ];
+
+    fn.component.layout.set({
+        name : 'input',
+        layout : function(opt = {}) {
+            var input = fn.element.create({
+                tagName : 'input',
+                attribute : { type : opt.field.form.type, name : opt.field.name, placeholder : opt.field.form.placeholder || '' },
+                style : { display : 'block', width : '100%', marginBottom : '8px', padding : '6px' },
+            });
+            if (opt.value !== undefined) {
+                input.value = opt.value;
+            }
+            return input;
+        }
+    });
+
+    fn.component.layout.set({
+        name : 'select',
+        layout : function(opt = {}) {
+            var select = fn.element.create({
+                tagName : 'select',
+                attribute : { name : opt.field.name },
+                style : { display : 'block', width : '100%', marginBottom : '8px', padding : '6px' },
+            });
+            opt.field.form.datas.forEach(function(option) {
+                fn.element.create({ tagName : 'option', attribute : { value : option.value }, text : option.label, parent : select });
+            });
+            if (opt.value !== undefined) {
+                select.value = opt.value;
+            }
+            return select;
+        }
+    });
+
+    fn.component.layout.set({
+        name : 'radio',
+        layout : function(opt = {}) {
+            var group = fn.element.create({ tagName : 'div', style : { marginBottom : '8px' } });
+            var radios = opt.field.form.datas.map(function(option) {
+                var radioLabel = fn.element.create({ tagName : 'label', style : { display : 'inline-block', marginRight : '12px', fontWeight : 'normal' }, parent : group });
+                var radio = fn.element.create({ tagName : 'input', attribute : { type : 'radio', name : opt.field.name, value : option.value }, parent : radioLabel });
+                fn.element.create({ tagName : 'span', text : ' ' + option.label, parent : radioLabel });
+                if (opt.value === option.value) {
+                    radio.checked = true;
+                }
+                return radio;
+            });
+            Object.defineProperty(group, 'value', { get : function() {
+                var checked = radios.find(function(radio) { return radio.checked; });
+                return checked ? checked.value : undefined;
+            } });
+            return group;
+        }
+    });
+
+    fn.component.layout.set({
+        name : 'form',
+        layout : function(opt = {data : {}}) {
+            var el = fn.element.create({ tagName : 'div', attribute : { class : '__form' }, data : opt.data });
+            el._.inputs = {};
+
+            opt.fields.forEach(function(field) {
+                fn.element.create({
+                    tagName : 'label',
+                    text : field.label,
+                    style : { display : 'block', marginBottom : '4px', fontSize : '12px', color : '#555' },
+                    parent : el,
+                });
+
+                el._.inputs[field.name] = fn.component.create({
+                    name : fn.component.layout.get({ name : field.form.type }) ? field.form.type : 'input',
+                    field : field,
+                    value : opt.data[field.name],
+                    parent : el,
+                });
+            });
+
+            el.save = function() {
+                var data = {};
+                opt.fields.forEach(function(field) {
+                    data[field.name] = el._.inputs[field.name].value;
+                });
+                if (el._.data.id !== undefined) {
+                    return fn.data.update({ key : 'item', id : el._.data.id, data : data });
+                }
+                return fn.data.insert({ key : 'item', data : data });
+            };
+
+            return el;
+        }
+    });
+
+    fn.component.layout.set({
+        name : 'list',
+        layout : function(opt = {}) {
+            var el = fn.element.create({ tagName : 'div' });
+
+            el.refresh = function() {
+                Array.from(el.children).forEach(function(child) { child.remove(); });
+                var items = fn.data.select({ key : 'item' }).map(function(row) {
+                    return Object.assign({ id : row.id }, row.data);
+                });
+                items.forEach(function(item) {
+                    fn.element.create({
+                        tagName : 'div',
+                        text : opt.fields.map(function(field) { return item[field.name]; }).join(' -- '),
+                        style : { padding : '8px', border : '1px solid #ccc', marginBottom : '4px', cursor : 'pointer' },
+                        parent : el,
+                        event : { click : function() {
+                            fn.component.create({
+                                name : 'popup',
+                                title : 'Edit item',
+                                caller : el,
+                                fields : opt.fields,
+                                render : function(popupEl) {
+                                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : item, parent : popupEl.content });
+                                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
+                                },
+                            });
+                        } },
+                    });
+                });
+            };
+
+            el.refresh();
+            return el;
+        }
+    });
+
+    var app = document.getElementById('app');
+    fn.element.create({
+        tagName : 'button',
+        attribute : { type : 'button' },
+        text : '+ New item',
+        style : { padding : '8px 16px', marginBottom : '12px' },
+        parent : app,
+        event : { click : function() {
+            fn.component.create({
+                name : 'popup',
+                title : 'New item',
+                caller : list,
+                fields : fields,
+                render : function(popupEl) {
+                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : {}, parent : popupEl.content });
+                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
+                },
+            });
+        } },
+    });
+    var list = fn.component.create({ name : 'list', fields : fields, parent : app });
+</script>
+</body>
+</html>

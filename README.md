@@ -1,6 +1,6 @@
 # fn
 
-A single file, `fn.js`, providing:
+A minimal framework core: a single file, `fn.js`, providing four essentials --
 
 1. `fn.element.create` -- the one DOM-builder primitive everything else is built from.
 2. `fn.component.layout.set/get/create` -- a named-layout registry/dispatcher.
@@ -11,9 +11,15 @@ A single file, `fn.js`, providing:
    this file.
 
 `fn.js` knows nothing about any specific app: it never references a resource key, a field name,
-or a UI label.
+or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. on its own -- those are
+conventions each app built on top implements for itself. This repo also carries `fn.layout.js`,
+a reference implementation of the `popup`/`close-btn`/`save-btn` convention (`popup` provides
+the `.__popup` wrapper and header that `close-btn`/`save-btn` find via
+`e.target.closest('.__popup')` and act on directly, with no caller-injected callback).
 
 ## Using it
 
 Load `fn.js` as a plain `<script>` tag before your app's own script(s) -- it attaches to the
-global `fn` object. No build step, no dependencies.
+global `fn` object. No build step, no dependencies. `fn.layout.js` is optional: load it right
+after `fn.js` to get a themeable `popup`/`close-btn`/`save-btn` reference implementation instead
+of writing your own from scratch.
