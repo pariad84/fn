@@ -39,28 +39,10 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                 title : 'List',
                 fields : fields,
                 init : function(opt) {
-                    fn.component.create({
-                        name : 'button',
-                        attribute : { title : 'New item' },
-                        text : '✏️',
-                        parent : opt.header,
-                        event : { click : function() {
-                            fn.component.create({
-                                parent : document.body,
-                                name : 'popup',
-                                title : 'New item',
-                                caller : opt.popup._.list,
-                                fields : fields,
-                                render : function(newOpt) {
-                                    fn.component.create({ name : 'form', fields : newOpt.popup._.fields, data : {}, parent : newOpt.content });
-                                    fn.component.create({ name : 'save-btn', parent : newOpt.content });
-                                },
-                            });
-                        } },
-                    });
+                    fn.component.create({ name : 'new-btn', parent : opt.header });
                 },
                 render : function(opt) {
-                    opt.popup._.list = fn.component.create({ name : 'list', fields : opt.popup._.fields, parent : opt.content });
+                    opt.popup._.caller = fn.component.create({ name : 'list', fields : opt.popup._.fields, parent : opt.content });
                 },
             });
         } },

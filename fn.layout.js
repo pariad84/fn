@@ -102,6 +102,35 @@
     });
 
     fn.component.layout.set({
+        name : 'new-btn',
+        layout : function(opt = {}) {
+            return fn.component.create({
+                name : 'button',
+                attribute : { title : 'New item' },
+                text : '✏️',
+                event : {
+                    click : function(e) {
+                        var popup = e.target.closest('.__popup');
+                        fn.component.create({
+                            parent : document.body,
+                            name : 'popup',
+                            title : 'New item',
+                            caller : popup._.caller,
+                            fields : popup._.fields,
+                            init : function(popupOpt) {
+                                fn.component.create({ name : 'save-btn', text : '💾', parent : popupOpt.header });
+                            },
+                            render : function(popupOpt) {
+                                fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : {}, parent : popupOpt.content });
+                            },
+                        });
+                    }
+                },
+            });
+        }
+    });
+
+    fn.component.layout.set({
         name : 'input',
         layout : function(opt = {}) {
             return fn.element.create({
