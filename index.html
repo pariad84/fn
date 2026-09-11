@@ -55,8 +55,12 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                                         name : 'btn-save',
                                         text : '💾',
                                         parent : popupOpt.header,
-                                        save : function(data) {
-                                            return fn.data.insert({ key : 'item', data : data });
+                                        click : function() {
+                                            fn.data.insert({ key : 'item', data : popupOpt.popup.querySelector('.__form').save() });
+                                            if (popupOpt.popup._.caller) {
+                                                popupOpt.popup._.caller.refresh();
+                                            }
+                                            popupOpt.popup.remove();
                                         },
                                     });
                                 },
@@ -89,8 +93,12 @@ built from <code>fn.layout.js</code>'s conventions.</p>
                                         name : 'btn-save',
                                         text : '💾',
                                         parent : popupOpt.header,
-                                        save : function(data) {
-                                            return fn.data.update({ key : 'item', id : item.id, data : data });
+                                        click : function() {
+                                            fn.data.update({ key : 'item', id : item.id, data : popupOpt.popup.querySelector('.__form').save() });
+                                            if (popupOpt.popup._.caller) {
+                                                popupOpt.popup._.caller.refresh();
+                                            }
+                                            popupOpt.popup.remove();
                                         },
                                     });
                                 },

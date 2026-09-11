@@ -112,17 +112,7 @@
                 name : 'button',
                 attribute : { title : 'Save' },
                 text : opt.text || 'Save',
-                event : {
-                    click : function(e) {
-                        var popup = e.target.closest('.__popup');
-                        var form = popup.querySelector('.__form');
-                        opt.save(form.save());
-                        if (popup._.caller) {
-                            popup._.caller.refresh();
-                        }
-                        popup.remove();
-                    }
-                },
+                event : { click : function() { opt.click(); } },
             });
         }
     });

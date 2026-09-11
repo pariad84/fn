@@ -21,14 +21,16 @@ last child of its parent, so it stacks above its siblings by DOM order alone, no
 
 - `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new` are all
   `fn.component.create({ name : 'button', ... })` calls that just supply text/attribute/event.
-- `popup`/`btn-close`/`btn-save` -- `popup` provides the `.__popup` wrapper and header that these
-  find via `e.target.closest('.__popup')` and act on directly, with no caller-injected callback;
-  `btn-save` also takes the caller-supplied `opt.save(data)` it calls with the enclosing `.__form`'s
-  collected values. The header is the drag handle (`fn.util.draggable`) and the `◢` in its
-  bottom-right corner is the resize handle (`fn.util.resizable`); a click anywhere on the popup
-  brings it to front via `fn.util.toFront` (capture-phase, so it runs before a click handler like
-  `btn-new`'s appends a new popup on top).
-- `btn-new` -- just calls the caller-supplied `opt.click()`; it has no popup/form logic of its own.
+- `popup`/`btn-close` -- `popup` provides the `.__popup` wrapper and header that `btn-close` finds
+  via `e.target.closest('.__popup')` and removes directly, with no caller-injected callback. The
+  header is the drag handle (`fn.util.draggable`) and the `◢` in its bottom-right corner is the
+  resize handle (`fn.util.resizable`); a click anywhere on the popup brings it to front via
+  `fn.util.toFront` (capture-phase, so it runs before a click handler like `btn-new`'s appends a
+  new popup on top).
+- `btn-save`/`btn-new` -- both just call the caller-supplied `opt.click()`; neither has any
+  popup/form logic of its own -- whoever creates them (typically inside a popup's `init`) supplies
+  what clicking should do, usually collecting the enclosing `.__form`'s data via `form.save()`,
+  persisting it, refreshing `popup._.caller`, and removing the popup.
 - `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field; `form.save()` just collects and returns
