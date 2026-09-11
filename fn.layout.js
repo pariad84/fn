@@ -44,7 +44,7 @@
                 opt.init({ popup : popup, header : header, content : content });
             }
 
-            fn.component.create({ name : 'close-btn', parent : header });
+            fn.component.create({ name : 'btn-close', parent : header });
 
             if (opt.render) {
                 opt.render({ popup : popup, header : header, content : content });
@@ -68,7 +68,7 @@
     });
 
     fn.component.layout.set({
-        name : 'close-btn',
+        name : 'btn-close',
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
@@ -80,7 +80,7 @@
     });
 
     fn.component.layout.set({
-        name : 'save-btn',
+        name : 'btn-save',
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
@@ -102,7 +102,7 @@
     });
 
     fn.component.layout.set({
-        name : 'new-btn',
+        name : 'btn-new',
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
@@ -118,7 +118,7 @@
                             caller : popup._.caller,
                             fields : popup._.fields,
                             init : function(popupOpt) {
-                                fn.component.create({ name : 'save-btn', text : '💾', parent : popupOpt.header });
+                                fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
                             },
                             render : function(popupOpt) {
                                 fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : {}, parent : popupOpt.content });
@@ -248,7 +248,7 @@
                                 fields : opt.fields,
                                 parent : document.body,
                                 init : function(popupOpt) {
-                                    fn.component.create({ name : 'save-btn', text : '💾', parent : popupOpt.header });
+                                    fn.component.create({ name : 'btn-save', text : '💾', parent : popupOpt.header });
                                 },
                                 render : function(popupOpt) {
                                     fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
