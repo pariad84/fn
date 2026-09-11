@@ -118,19 +118,25 @@
     fn.component.layout.set({
         name : 'list',
         layout : function(opt = {}) {
-            var el = fn.element.create({ tagName : 'div' });
+            var el = fn.element.create({ tagName : 'table', style : { width : '100%', borderCollapse : 'collapse' } });
+
+            var headRow = fn.element.create({ tagName : 'tr', parent : fn.element.create({ tagName : 'thead', parent : el }) });
+            opt.fields.forEach(function(field) {
+                fn.element.create({ tagName : 'th', text : field.label, style : { textAlign : 'left', padding : '8px', borderBottom : '1px solid #ccc' }, parent : headRow });
+            });
+
+            var tbody = fn.element.create({ tagName : 'tbody', parent : el });
 
             el.refresh = function() {
-                Array.from(el.children).forEach(function(child) { child.remove(); });
+                Array.from(tbody.children).forEach(function(child) { child.remove(); });
                 var items = fn.data.select({ key : 'item' }).map(function(row) {
                     return Object.assign({ id : row.id }, row.data);
                 });
                 items.forEach(function(item) {
-                    fn.element.create({
-                        tagName : 'div',
-                        text : opt.fields.map(function(field) { return item[field.name]; }).join(' -- '),
-                        style : { padding : '8px', border : '1px solid #ccc', marginBottom : '4px', cursor : 'pointer' },
-                        parent : el,
+                    var tr = fn.element.create({
+                        tagName : 'tr',
+                        style : { cursor : 'pointer' },
+                        parent : tbody,
                         event : { click : function() {
                             fn.component.create({
                                 name : 'popup',
@@ -143,6 +149,9 @@
                                 },
                             });
                         } },
+                    });
+                    opt.fields.forEach(function(field) {
+                        fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });
                     });
                 });
             };
