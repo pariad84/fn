@@ -218,9 +218,11 @@
                                 caller : el,
                                 fields : opt.fields,
                                 parent : document.body,
+                                init : function(popupOpt) {
+                                    fn.component.create({ name : 'save-btn', parent : popupOpt.header });
+                                },
                                 render : function(popupOpt) {
                                     fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
-                                    fn.component.create({ name : 'save-btn', parent : popupOpt.content });
                                 },
                             });
                         } },
