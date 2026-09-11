@@ -14,21 +14,6 @@ against a plain field-definition array -- this file only supplies data and app w
 <script src="fn.layout.js"></script>
 <script>
 
-    var page = [
-        {type : "button", text : "+ New item", style : { padding : '8px 16px', marginBottom : '12px' }, event : { click : function() {
-            fn.component.create({
-                name : 'popup',
-                title : 'New item',
-                caller : list,
-                fields : fields,
-                render : function(popupEl) {
-                    fn.component.create({ name : 'form', fields : popupEl._.fields, data : {}, parent : popupEl.content });
-                    fn.component.create({ name : 'save-btn', parent : popupEl.content });
-                },
-            });
-        } } },
-    ];
-
     var fields = [
         { name : 'text', label : 'Text', form : { type : 'text', placeholder : 'Text' }, list : { type : 'text' } },
         { name : 'select', label : 'Select', form : { type : 'select', datas : [
@@ -42,13 +27,9 @@ against a plain field-definition array -- this file only supplies data and app w
         { name : 'datetime', label : 'Datetime', form : { type : 'datetime-local' }, list : { type : 'text' } },
     ];
 
-    var app = document.getElementById('app');
-    fn.component.create({
-        name : 'button',
-        text : '+ New item',
-        style : { padding : '8px 16px', marginBottom : '12px' },
-        parent : app,
-        event : { click : function() {
+    var list;
+    var page = [
+        { type : 'button', text : '+ New item', style : { padding : '8px 16px', marginBottom : '12px' }, event : { click : function() {
             fn.component.create({
                 name : 'popup',
                 title : 'New item',
@@ -59,9 +40,17 @@ against a plain field-definition array -- this file only supplies data and app w
                     fn.component.create({ name : 'save-btn', parent : popupEl.content });
                 },
             });
-        } },
+        } } },
+        { type : 'list', fields : fields },
+    ];
+
+    var app = document.getElementById('app');
+    page.forEach(function(item) {
+        var el = fn.component.create(Object.assign({}, item, { name : item.type, parent : app }));
+        if (item.type === 'list') {
+            list = el;
+        }
     });
-    var list = fn.component.create({ name : 'list', fields : fields, parent : app });
 </script>
 </body>
 </html>
