@@ -34,6 +34,7 @@ built from <code>fn.layout.js</code>'s conventions.</p>
         parent : app,
         event : { click : function() {
             fn.component.create({
+                parent : document.body,
                 name : 'popup',
                 title : 'List',
                 fields : fields,

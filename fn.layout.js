@@ -36,15 +36,22 @@
 
             var content = fn.element.create({ parent : popup, tagName : 'div', style : { padding : '12px' } });
 
-            popup.content = content;
+            popup._.header = header;
+            popup._.content = content;
             popup._.caller = opt.caller;
             popup._.fields = opt.fields;
 
-            if (opt.render) {
-                opt.render(popup);
+            if (opt.init) {
+                opt.init({ popup : popup, header : header, content : content });
             }
 
-            document.body.appendChild(popup);
+            if (opt.render) {
+                opt.render({ popup : popup, header : header, content : content });
+            }
+
+            if (opt.parent) {
+                opt.parent.appendChild(popup);
+            }
             return popup;
         }
     });
