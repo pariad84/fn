@@ -1,7 +1,6 @@
 # fn
 
-The framework core of [mini-framework](https://github.com/pariad84/mini-framework): a single
-file, `fn.js`, providing four of its seven essentials --
+A single file, `fn.js`, providing:
 
 1. `fn.element.create` -- the one DOM-builder primitive everything else is built from.
 2. `fn.component.layout.set/get/create` -- a named-layout registry/dispatcher.
@@ -12,16 +11,7 @@ file, `fn.js`, providing four of its seven essentials --
    this file.
 
 `fn.js` knows nothing about any specific app: it never references a resource key, a field name,
-or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. -- those, plus the remaining
-three essentials (schema-driven `form`/`list`, resource-reference fields, the `opt`
-single-parameter/self-contained-component convention), are conventions each app built on top
-implements for itself. A reference implementation of those conventions
-(`fn.component.layout.js`), shared CRUD/UI-wiring helpers (`fn.util.js`), and every example app
-demonstrating them live in [mini-framework](https://github.com/pariad84/mini-framework), which
-also documents the full design history and conventions this file follows.
-
-This repo is `fn.js`'s canonical source. mini-framework keeps its own copy in sync so its
-examples can keep loading it locally without a build step.
+or a UI label.
 
 ## Using it
 

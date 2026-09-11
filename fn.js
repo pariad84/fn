@@ -129,45 +129,5 @@
         return row;
     };
 
-    // Used by the schema-driven form (essential #4): if a textarea's own value happens to hold
-    // a JSON array/object, derive read-only list columns/datas from its shape so the form can
-    // preview it without any schema declaring that the field is JSON.
-    fn.component._.jsonPreview = function(value) {
-        if (Array.isArray(value)) {
-            var keys = [];
-            value.forEach(function(item) {
-                if (item && typeof item === 'object' && !Array.isArray(item)) {
-                    Object.keys(item).forEach(function(key) {
-                        if (keys.indexOf(key) === -1) {
-                            keys.push(key);
-                        }
-                    });
-                }
-            });
-            var columns = keys.length
-                ? keys.map(function(key) { return { name : key, label : key, list : {} }; })
-                : [ { name : 'value', label : 'Value', list : {} } ];
-            var datas = value.map(function(item, index) {
-                if (item && typeof item === 'object' && !Array.isArray(item)) {
-                    var row = { id : index };
-                    keys.forEach(function(key) {
-                        var v = item[key];
-                        row[key] = (v && typeof v === 'object') ? JSON.stringify(v) : v;
-                    });
-                    return row;
-                }
-                return { id : index, value : item };
-            });
-            return { columns : columns, datas : datas };
-        }
-        return {
-            columns : [ { name : 'key', label : 'Key', list : {} }, { name : 'value', label : 'Value', list : {} } ],
-            datas : Object.keys(value).map(function(key) {
-                var v = value[key];
-                return { id : key, key : key, value : (v && typeof v === 'object') ? JSON.stringify(v) : v };
-            }),
-        };
-    };
-
     global.fn = fn;
 })(window);
