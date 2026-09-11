@@ -1,5 +1,5 @@
 (function(global) {
-    const fn = {};
+    var fn = {};
 
     fn.component = {};
     fn.component._ = {};
@@ -9,25 +9,17 @@
     fn.data._ = {};
     fn.element = {};
 
-    // 5. render escape hatch -- a column can carry a JS source string instead of a fixed type,
-    // so a resource definition (pure data) can extend what a cell/field does without touching
-    // this file. Same mechanism serves both list cells and form fields.
-    fn.render = function(opt = {}) {
-        var render = new Function('return (' + opt.source + ')')();
-        return render(opt.data);
-    };
-
     // 1. fn.element.create -- the one DOM-builder primitive everything else is built from.
     fn.element.create = function(opt = {}) {
         var el = document.createElement(opt.tagName);
         el._ = {};
         if (opt.attribute) {
-            for (const [key, value] of Object.entries(opt.attribute)) {
+            for (var [key, value] of Object.entries(opt.attribute)) {
                 el.setAttribute(key, value);
             }
         }
         if (opt.style) {
-            for (const [key, value] of Object.entries(opt.style)) {
+            for (var [key, value] of Object.entries(opt.style)) {
                 el.style[key] = value;
             }
         }
@@ -37,8 +29,11 @@
         if (opt.text) {
             el.textContent = opt.text;
         }
+        if (opt.value !== undefined) {
+            el.value = opt.value;
+        }
         if (opt.event) {
-            for (const [eventType, eventHandler] of Object.entries(opt.event)) {
+            for (var [eventType, eventHandler] of Object.entries(opt.event)) {
                 el.addEventListener(eventType, eventHandler);
             }
         }
@@ -127,6 +122,14 @@
         var row = rows.find(function(row) { return row.id === opt.id; });
         fn.data._.write({ key : opt.key, rows : rows.filter(function(row) { return row.id !== opt.id; }) });
         return row;
+    };
+
+    // 4. render escape hatch -- a column can carry a JS source string instead of a fixed type,
+    // so a resource definition (pure data) can extend what a cell/field does without touching
+    // this file. Same mechanism serves both list cells and form fields.
+    fn.render = function(opt = {}) {
+        var render = new Function('return (' + opt.source + ')')();
+        return render(opt.data);
     };
 
     global.fn = fn;
