@@ -1,9 +1,11 @@
 (function() {
     var fn = window.fn;
 
-    // opt convention + self-contained components: every layout takes one `opt` object, and
-    // buttons below find their own popup/form via .closest('.__popup')/.querySelector('.__form')
-    // instead of a caller-injected onClick.
+    // Conventions below: every layout takes one `opt` object; `opt.event` is a DOM listener map
+    // handed straight to fn.element.create; the hooks a caller supplies (`init`, `render`,
+    // `select`, `click`) are functions called with a single object when they carry anything.
+    // btn-close is the one button that acts by itself, finding its popup via
+    // e.target.closest('.__popup'); every other button just runs its caller's handler.
     fn.component.layout.set({
         name : 'popup',
         layout : function(opt = {}) {
@@ -63,8 +65,6 @@
 
             popup._.header = header;
             popup._.content = content;
-            popup._.caller = opt.caller;
-            popup._.fields = opt.fields;
 
             if (opt.init) {
                 opt.init({ popup : popup, header : header, content : content });
@@ -98,8 +98,8 @@
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
-                attribute : { title : 'Close' },
-                text : '❌',
+                attribute : { title : opt.title || 'Close' },
+                text : opt.text || '❌',
                 event : { click : function(e) { e.target.closest('.__popup').remove(); } },
             });
         }
@@ -110,9 +110,9 @@
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
-                attribute : { title : 'Save' },
-                text : opt.text || 'Save',
-                event : { click : function() { opt.click(); } },
+                attribute : { title : opt.title || 'Save' },
+                text : opt.text || '💾',
+                event : opt.event,
             });
         }
     });
@@ -122,9 +122,9 @@
         layout : function(opt = {}) {
             return fn.component.create({
                 name : 'button',
-                attribute : { title : 'New item' },
-                text : '✏️',
-                event : { click : function() { opt.click(); } },
+                attribute : { title : opt.title || 'New item' },
+                text : opt.text || '✏️',
+                event : opt.event,
             });
         }
     });
@@ -234,7 +234,7 @@
                         tagName : 'tr',
                         style : { cursor : 'pointer' },
                         parent : tbody,
-                        event : { click : function() { opt.click(item, el); } },
+                        event : { click : function() { opt.click({ item : item, list : el }); } },
                     });
                     opt.fields.forEach(function(field) {
                         fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });

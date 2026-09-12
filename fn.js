@@ -68,14 +68,6 @@
         return el;
     };
 
-    // 2. fn.component.refresh -- removes opt.parent's current children and recreates the named
-    // layout inside it, so the caller.refresh() convention doesn't force every app to reach past
-    // fn.component.create into the DOM just to re-render a list/page in place.
-    fn.component.refresh = function(opt = {}) {
-        Array.from(opt.parent.children).forEach(function(child) { child.remove(); });
-        return fn.component.create(opt);
-    };
-
     // 3. fn.data.select/insert/update/delete -- CRUD abstraction. Every layout below only ever
     // talks to these four functions, so swapping localStorage for a real backend later only
     // means rewriting this block, not any layout.

@@ -16,24 +16,28 @@ few DOM-interaction helpers -- `fn.util.draggable` (one element drags another ar
 last child of its parent, so it stacks above its siblings by DOM order alone, no z-index) -- and
 `fn.layout.js`, a reference implementation of those conventions:
 
+Every layout takes one `opt` object. `opt.event` is a DOM listener map handed straight to
+`fn.element.create`, so handlers are attached the same way at every level. The hooks a caller
+supplies -- `init`, `render`, `select`, `click` -- are functions, called with a single object when
+they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s `click` gets
+`{ item, list }`).
+
 - `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new` are all
-  `fn.component.create({ name : 'button', ... })` calls that just supply text/attribute/event.
+  `fn.component.create({ name : 'button', ... })` calls that just preset text/title and pass
+  `opt.event` through, each default overridable via `opt.text`/`opt.title`.
 - `popup`/`btn-close` -- `popup` provides the `.__popup` wrapper and header that `btn-close` finds
-  via `e.target.closest('.__popup')` and removes directly, with no caller-injected callback. The
-  header is the drag handle (`fn.util.draggable`) and the `◢` in its bottom-right corner is the
-  resize handle (`fn.util.resizable`); a click anywhere on the popup brings it to front via
-  `fn.util.toFront` (capture-phase, so it runs before a click handler like `btn-new`'s appends a
-  new popup on top).
-- `btn-save`/`btn-new` -- both just call the caller-supplied `opt.click()`; neither has any
-  popup/form logic of its own -- whoever creates them (typically inside a popup's `init`) supplies
-  what clicking should do, usually collecting the enclosing `.__form`'s data via `form.save()`,
-  persisting it, refreshing `popup._.caller`, and removing the popup.
+  via `e.target.closest('.__popup')` and removes directly; it is the one button that acts by
+  itself, the rest run their caller's handler. The header is the drag handle
+  (`fn.util.draggable`) and the `◢` in its bottom-right corner is the resize handle
+  (`fn.util.resizable`); a click anywhere on the popup brings it to front via `fn.util.toFront`
+  (capture-phase, so it runs before a click handler like `btn-new`'s appends a new popup on top).
+  `popup` itself knows nothing about fields or lists -- only `title`/`parent`/`init`/`render`.
 - `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field; `form.save()` just collects and returns
   field values, it doesn't persist them) and a table-based list (one row per item, fetched via the
   caller-supplied `opt.select()`, each row's click calling the caller-supplied
-  `opt.click(item, list)`) built on top of those field layouts.
+  `opt.click({ item, list })`) built on top of those field layouts.
 
 ## Using it
 
