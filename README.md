@@ -33,6 +33,10 @@ they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s 
   (`fn.util.resizable`); a click anywhere on the popup brings it to front via `fn.util.toFront`
   (capture-phase, so it runs before a click handler like `btn-new`'s appends a new popup on top).
   `popup` itself knows nothing about fields or lists -- only `title`/`parent`/`init`/`render`.
+- `confirm` -- a popup that asks before a destructive action, built from `popup` and `btn-close`
+  rather than `window.confirm` so it looks like the rest of the page and stacks with the popups
+  already open behind it. `opt.confirm` runs only on the confirming button; the Cancel button and
+  the header's close both just remove it.
 - `input`/`select`/`radio` -- field-level layouts, dispatched by `field.form.type` (falling back
   to `input` for any type without its own layout).
 - `form`/`list` -- a schema-driven form (one row per field; `form.save()` just collects and returns
@@ -108,11 +112,17 @@ nothing ships with the library, and it still loads with no build step and no dep
 the suite needs no server. The `server` repo checks its half against the same table; if the two
 drift, one of the suites goes red.
 
+`tests/admin.test.js` drives `admin.html` exactly as it ships, answering its requests in the
+browser instead of over a network -- so the console is covered without a test-only hook in the page
+and without the server repo present.
+
 Tests for a known defect are marked **todo**, carrying what is wrong in the message: they run,
 they fail, and the run stays green until the defect is fixed. Removing the todo flag is part of the
 fix. There are none open at the moment.
 
-`admin.html` is a CRUD console for every resource a server defines, and it needs one running. It
+`admin.html` is a CRUD console for every resource a server defines, and it needs one running.
+Deleting a row asks first -- `admin.html` is the only place with a button that destroys something,
+so it is the only place that has to. It
 names no resource, no field and no label of its own -- it fetches the definitions from
 `/api/resources` and hands their `fields` straight to `list` and `form`, which is what those two
 layouts already take. Adding a resource is a JSON file on the server; this page does not change.

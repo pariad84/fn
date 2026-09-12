@@ -164,6 +164,70 @@ describe('fn.layout list', function() {
     });
 });
 
+describe('fn.layout confirm', function() {
+    before(fn.before);
+    after(fn.after);
+
+    const open = `
+        var confirmed = 0;
+        fn.component.create({
+            name : 'confirm', title : 'Delete', text : 'Delete this item? There is no undo.',
+            label : 'Delete', parent : document.body,
+            confirm : function() { confirmed += 1; },
+        });
+    `;
+
+    it('shows the question and both ways out', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(new Function(`
+            ${open}
+            const popup = document.querySelector('.__popup');
+            return {
+                title : popup.firstElementChild.firstElementChild.textContent,
+                text : popup.textContent.indexOf('There is no undo.') !== -1,
+                buttons : Array.from(popup.querySelectorAll('button')).map(function(b) { return b.textContent; }),
+            };
+        `)), { title : 'Delete', text : true, buttons : ['❌', 'Cancel', 'Delete'] });
+    });
+
+    it('confirming runs the hook once and closes', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(new Function(`
+            ${open}
+            document.querySelector('.__popup button[title="Delete"]').click();
+            return { confirmed : confirmed, open : document.querySelectorAll('.__popup').length };
+        `)), { confirmed : 1, open : 0 });
+    });
+
+    it('cancelling closes and runs nothing', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(new Function(`
+            ${open}
+            document.querySelector('.__popup button[title="Cancel"]').click();
+            return { confirmed : confirmed, open : document.querySelectorAll('.__popup').length };
+        `)), { confirmed : 0, open : 0 });
+    });
+
+    it('the header close is a cancel too, not a silent confirm', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(new Function(`
+            ${open}
+            document.querySelector('.__popup button[title="Close"]').click();
+            return { confirmed : confirmed, open : document.querySelectorAll('.__popup').length };
+        `)), { confirmed : 0, open : 0 });
+    });
+
+    it('opens above the popup that raised it, which stays open behind', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(new Function(`
+            const behind = fn.component.create({ name : 'popup', title : 'Edit', parent : document.body });
+            ${open}
+            const popups = document.querySelectorAll('.__popup');
+            return { count : popups.length, last : popups[popups.length - 1].textContent.indexOf('no undo') !== -1 };
+        `)), { count : 2, last : true });
+    });
+});
+
 describe('fn.layout popup and buttons', function() {
     before(fn.before);
     after(fn.after);

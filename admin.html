@@ -63,10 +63,21 @@ a change to this page.</p>
                     name : 'btn-delete',
                     parent : popupOpt.header,
                     event : { click : function() {
-                        Promise.resolve(fn.data.delete({ key : opt.resource.key, id : opt.item.id })).then(function() {
-                            opt.list.refresh();
-                            popupOpt.popup.remove();
-                        }, function(error) { fail(popupOpt.content, error); });
+                        fn.component.create({
+                            name : 'confirm',
+                            title : 'Delete',
+                            text : 'Delete this ' + opt.resource.key + '? There is no undo.',
+                            label : 'Delete',
+                            parent : document.body,
+                            // Only on confirm. The edit popup stays open behind it either way, so a
+                            // delete that the server refuses still has somewhere to report itself.
+                            confirm : function() {
+                                Promise.resolve(fn.data.delete({ key : opt.resource.key, id : opt.item.id })).then(function() {
+                                    opt.list.refresh();
+                                    popupOpt.popup.remove();
+                                }, function(error) { fail(popupOpt.content, error); });
+                            },
+                        });
                     } },
                 });
             },
