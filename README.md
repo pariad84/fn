@@ -81,6 +81,25 @@ Promise.resolve(fn.data.insert({ key : 'item', data : data })).then(saved, funct
 `index.html` is the framework's own test page: one button, one popup, one list, storing to
 localStorage. Open it directly, no server needed.
 
+## Tests
+
+```sh
+npm install && npx playwright install chromium
+npm test
+```
+
+fn is a browser library, so the tests drive a real one: they serve the repo as it stands and load
+`fn.js` the way a page does, through a `<script>` tag. Playwright is a **devDependency only** --
+nothing ships with the library, and it still loads with no build step and no dependencies.
+
+`tests/remote.test.js` checks fn's half of the contract in `tests/contract.js` against a stub, so
+the suite needs no server. The `server` repo checks its half against the same table; if the two
+drift, one of the suites goes red.
+
+A run reports some tests as **todo**. Those are known defects, each one carrying what is wrong in
+its todo message -- they run, they fail, and the run stays green. Removing a todo flag is part of
+fixing the defect.
+
 `admin.html` is a CRUD console for every resource a server defines, and it needs one running. It
 names no resource, no field and no label of its own -- it fetches the definitions from
 `/api/resources` and hands their `fields` straight to `list` and `form`, which is what those two

@@ -1,0 +1,12 @@
+{
+  "name": "fn",
+  "version": "1.0.0",
+  "description": "A minimal framework core",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
