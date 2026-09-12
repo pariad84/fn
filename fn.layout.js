@@ -226,18 +226,22 @@
 
             var tbody = fn.element.create({ tagName : 'tbody', parent : el });
 
+            // opt.select answers with rows, or with a Promise of rows when fn.data is backed by a
+            // server (fn.data.remote.js), so the rebuild waits on Promise.resolve either way. The
+            // rows are cleared inside the callback, so a failed select leaves the list as it was.
             el.refresh = function() {
-                Array.from(tbody.children).forEach(function(child) { child.remove(); });
-                var items = opt.select();
-                items.forEach(function(item) {
-                    var tr = fn.element.create({
-                        tagName : 'tr',
-                        style : { cursor : 'pointer' },
-                        parent : tbody,
-                        event : { click : function() { opt.click({ item : item, list : el }); } },
-                    });
-                    opt.fields.forEach(function(field) {
-                        fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });
+                return Promise.resolve(opt.select()).then(function(items) {
+                    Array.from(tbody.children).forEach(function(child) { child.remove(); });
+                    items.forEach(function(item) {
+                        var tr = fn.element.create({
+                            tagName : 'tr',
+                            style : { cursor : 'pointer' },
+                            parent : tbody,
+                            event : { click : function() { opt.click({ item : item, list : el }); } },
+                        });
+                        opt.fields.forEach(function(field) {
+                            fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });
+                        });
                     });
                 });
             };
