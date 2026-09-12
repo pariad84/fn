@@ -2,7 +2,6 @@
     var fn = {};
 
     fn.component = {};
-    fn.component._ = {};
     fn.component.layout = {};
     fn.component.layout.data = {};
     fn.data = {};
@@ -11,6 +10,9 @@
 
     // 1. fn.element.create -- the one DOM-builder primitive everything else is built from.
     fn.element.create = function(opt = {}) {
+        if (!opt.tagName) {
+            throw new Error('fn.element.create needs a tagName');
+        }
         var el = document.createElement(opt.tagName);
         el._ = {};
         if (opt.attribute) {
@@ -22,9 +24,6 @@
             for (var [key, value] of Object.entries(opt.style)) {
                 el.style[key] = value;
             }
-        }
-        if (opt.parent) {
-            opt.parent.appendChild(el);
         }
         // Not a truthiness test: a list cell showing a stored 0 or false is text, not an empty cell.
         if (opt.text !== undefined && opt.text !== null) {
@@ -38,23 +37,21 @@
                 el.addEventListener(eventType, eventHandler);
             }
         }
-        el._.opt = opt;
-        if (opt.data) {
-            el._.data = opt.data;
-        }
-        if (opt.datas) {
-            el._.datas = opt.datas;
+        // Last, so the element enters the document finished instead of arriving empty and then
+        // being filled in place.
+        if (opt.parent) {
+            opt.parent.appendChild(el);
         }
         return el;
     };
 
     // 2. fn.component.layout.set/get/create -- named-layout registry/dispatcher.
     fn.component.layout.set = function(opt = {}) {
-        this.data[opt.name] = opt.layout;
+        fn.component.layout.data[opt.name] = opt.layout;
     };
 
     fn.component.layout.get = function(opt = {}) {
-        return this.data[opt.name];
+        return fn.component.layout.data[opt.name];
     };
 
     fn.component.create = function(opt = {}) {
@@ -69,22 +66,50 @@
         return el;
     };
 
-    // 3. fn.data.select/insert/update/delete -- CRUD abstraction. Every layout below only ever
-    // talks to these four functions, so swapping localStorage for a real backend later only
-    // means rewriting this block, not any layout.
+    // 3. fn.data.select/insert/update/delete -- CRUD abstraction. Every layout only ever talks to
+    // these four functions, so swapping localStorage for a real backend means rewriting this block
+    // and nothing else -- fn.data.remote.js is that rewrite.
+    //
+    // Reads never throw. Storage the browser refuses -- where blocked site data makes access throw
+    // SecurityError even though Storage is defined -- and a value some other writer corrupted both
+    // answer as an empty store, because a page that cannot read is still a page that renders.
+    // Writes are the opposite: a write that did not happen comes back as a rejected promise, so
+    // the Promise.resolve() callers already wrap results in hands it to them rather than losing it.
+    //
+    // A key holds { seq, rows }: seq is the highest id ever handed out, kept so that deleting the
+    // last row does not hand its id to the next insert. A key still holding a bare array of rows
+    // is read as one, seeding seq from it once.
     fn.data._.read = function(opt = {}) {
-        var raw = typeof(Storage) !== "undefined" ? localStorage.getItem(opt.key) : null;
-        return raw ? JSON.parse(raw) : [];
+        try {
+            var raw = localStorage.getItem(opt.key);
+            if (raw === null) {
+                return { seq : 0, rows : [] };
+            }
+            var stored = JSON.parse(raw);
+            if (Array.isArray(stored)) {
+                return {
+                    seq : stored.reduce(function(max, row) { return Math.max(max, row.id); }, 0),
+                    rows : stored,
+                };
+            }
+            return stored;
+        } catch (error) {
+            console.warn('fn.data: cannot read "' + opt.key + '" (' + error.name + '), reading it as empty');
+            return { seq : 0, rows : [] };
+        }
     };
 
     fn.data._.write = function(opt = {}) {
-        if (typeof(Storage) !== "undefined") {
-            localStorage.setItem(opt.key, JSON.stringify(opt.rows));
+        try {
+            localStorage.setItem(opt.key, JSON.stringify(opt.store));
+            return null;
+        } catch (error) {
+            return Promise.reject(error);
         }
     };
 
     fn.data.select = function(opt = {}) {
-        var rows = fn.data._.read({ key : opt.key });
+        var rows = fn.data._.read({ key : opt.key }).rows;
         if (opt.id !== undefined) {
             return rows.find(function(row) { return row.id === opt.id; });
         }
@@ -92,29 +117,34 @@
     };
 
     fn.data.insert = function(opt = {}) {
-        var rows = fn.data._.read({ key : opt.key });
-        var nextId = rows.reduce(function(max, row) { return Math.max(max, row.id); }, 0) + 1;
-        var row = { id : nextId, data : opt.data };
-        rows.push(row);
-        fn.data._.write({ key : opt.key, rows : rows });
-        return row;
+        var store = fn.data._.read({ key : opt.key });
+        var row = { id : store.seq + 1, data : opt.data };
+        store.seq = row.id;
+        store.rows.push(row);
+        var failed = fn.data._.write({ key : opt.key, store : store });
+        return failed ? failed : row;
     };
 
     fn.data.update = function(opt = {}) {
-        var rows = fn.data._.read({ key : opt.key });
-        var row = rows.find(function(r) { return r.id === opt.id; });
-        if (row) {
-            row.data = opt.data;
-            fn.data._.write({ key : opt.key, rows : rows });
+        var store = fn.data._.read({ key : opt.key });
+        var row = store.rows.find(function(candidate) { return candidate.id === opt.id; });
+        if (!row) {
+            return undefined;
         }
-        return row;
+        row.data = opt.data;
+        var failed = fn.data._.write({ key : opt.key, store : store });
+        return failed ? failed : row;
     };
 
     fn.data.delete = function(opt = {}) {
-        var rows = fn.data._.read({ key : opt.key });
-        var row = rows.find(function(row) { return row.id === opt.id; });
-        fn.data._.write({ key : opt.key, rows : rows.filter(function(row) { return row.id !== opt.id; }) });
-        return row;
+        var store = fn.data._.read({ key : opt.key });
+        var row = store.rows.find(function(candidate) { return candidate.id === opt.id; });
+        if (!row) {
+            return undefined;
+        }
+        store.rows = store.rows.filter(function(candidate) { return candidate.id !== opt.id; });
+        var failed = fn.data._.write({ key : opt.key, store : store });
+        return failed ? failed : row;
     };
 
     global.fn = fn;

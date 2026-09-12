@@ -45,7 +45,18 @@ they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s 
 
 ## Storage
 
-`fn.js` stores rows in localStorage. `fn.data.remote.js` is a drop-in replacement: load it after
+`fn.js` stores rows in localStorage, under one key per resource holding `{ seq, rows }`. `seq` is
+the highest id ever handed out, kept so that deleting the last row does not hand its id to the next
+insert -- an edit still open on the old row would otherwise overwrite the new one. A key written by
+an older version, holding a bare array of rows, is read as one and seeds `seq` from it.
+
+Reads never throw. Storage the browser refuses -- blocked site data makes `localStorage` access
+throw `SecurityError`, even though `Storage` itself is defined -- and a value some other writer
+corrupted both read as an empty store and warn, because a page that cannot read is still a page
+that renders. Writes are the opposite: a write that did not happen comes back as a **rejected
+promise**, so the `Promise.resolve()` below hands it to the caller instead of losing it silently.
+
+`fn.data.remote.js` is a drop-in replacement: load it after
 `fn.js` and the same four functions talk to a server instead -- no layout and no app code knows
 which one is loaded. Point it at your server before the first call:
 
@@ -62,7 +73,8 @@ write body of `{ "data": { ... } }` and `404` for a row that isn't there. The `s
 
 **The one convention this imposes:** the four functions may answer with a value or with a promise,
 so whatever consumes a result goes through `Promise.resolve()`. That reads the same for both
-storage layers, which is what lets one page run against either:
+storage layers -- including on failure, which is why a failed localStorage write is a rejected
+promise rather than a throw -- and it is what lets one page run against either:
 
 ```js
 Promise.resolve(fn.data.select({ key : 'item' })).then(function(rows) { ... });
@@ -80,6 +92,25 @@ Promise.resolve(fn.data.insert({ key : 'item', data : data })).then(saved, funct
 
 `index.html` is the framework's own test page: one button, one popup, one list, storing to
 localStorage. Open it directly, no server needed.
+
+## Tests
+
+```sh
+npm install && npx playwright install chromium
+npm test
+```
+
+fn is a browser library, so the tests drive a real one: they serve the repo as it stands and load
+`fn.js` the way a page does, through a `<script>` tag. Playwright is a **devDependency only** --
+nothing ships with the library, and it still loads with no build step and no dependencies.
+
+`tests/remote.test.js` checks fn's half of the contract in `tests/contract.js` against a stub, so
+the suite needs no server. The `server` repo checks its half against the same table; if the two
+drift, one of the suites goes red.
+
+Tests for a known defect are marked **todo**, carrying what is wrong in the message: they run,
+they fail, and the run stays green until the defect is fixed. Removing the todo flag is part of the
+fix. There are none open at the moment.
 
 `admin.html` is a CRUD console for every resource a server defines, and it needs one running. It
 names no resource, no field and no label of its own -- it fetches the definitions from
