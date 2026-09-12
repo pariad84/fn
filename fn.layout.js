@@ -141,6 +141,47 @@
         }
     });
 
+    // A destructive action asks first. Built from popup and btn-close rather than window.confirm,
+    // so it looks like the rest of the page and stacks with the popups already open behind it.
+    // opt.confirm is the hook, called only on the confirming button; every other way out -- the
+    // Cancel button, the header's close -- just removes the popup and calls nothing.
+    fn.component.layout.set({
+        name : 'confirm',
+        layout : function(opt = {}) {
+            return fn.component.create({
+                name : 'popup',
+                title : opt.title || 'Confirm',
+                render : function(popupOpt) {
+                    fn.element.create({
+                        tagName : 'div',
+                        text : opt.text,
+                        style : { marginBottom : '12px', maxWidth : '320px' },
+                        parent : popupOpt.content,
+                    });
+
+                    var actions = fn.element.create({
+                        tagName : 'div',
+                        style : { display : 'flex', gap : '8px', justifyContent : 'flex-end' },
+                        parent : popupOpt.content,
+                    });
+
+                    fn.component.create({ name : 'btn-close', text : 'Cancel', title : 'Cancel', parent : actions });
+
+                    fn.component.create({
+                        name : 'button',
+                        text : opt.label || 'OK',
+                        attribute : { title : opt.label || 'OK' },
+                        parent : actions,
+                        event : { click : function(e) {
+                            e.target.closest('.__popup').remove();
+                            opt.confirm();
+                        } },
+                    });
+                },
+            });
+        }
+    });
+
     fn.component.layout.set({
         name : 'input',
         layout : function(opt = {}) {
