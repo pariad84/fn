@@ -226,6 +226,18 @@
         }
     });
 
+    // What a list cell shows for a stored value. A field carrying form.datas -- select and radio,
+    // and anything else built the same way -- stores the option's value, so the cell has to look
+    // up the option to show its label. A value with no matching option falls back to itself, so a
+    // row written before the options changed still shows what it holds instead of going blank.
+    function display(opt = {}) {
+        if (!opt.field.form.datas) {
+            return opt.value;
+        }
+        var option = opt.field.form.datas.find(function(option) { return option.value === opt.value; });
+        return option ? option.label : opt.value;
+    }
+
     fn.component.layout.set({
         name : 'list',
         layout : function(opt = {}) {
@@ -252,7 +264,7 @@
                             event : { click : function() { opt.click({ item : item, list : el }); } },
                         });
                         opt.fields.forEach(function(field) {
-                            fn.element.create({ tagName : 'td', text : item[field.name], style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });
+                            fn.element.create({ tagName : 'td', text : display({ field : field, value : item[field.name] }), style : { padding : '8px', borderBottom : '1px solid #eee' }, parent : tr });
                         });
                     });
                 });

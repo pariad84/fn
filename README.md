@@ -39,7 +39,9 @@ they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s 
   field values, it doesn't persist them) and a table-based list (one row per item, fetched via the
   caller-supplied `opt.select()`, each row's click calling the caller-supplied
   `opt.click({ item, list })`) built on top of those field layouts. `list.refresh()` resolves
-  `opt.select()` as a promise, so a list works the same whichever storage layer is loaded.
+  `opt.select()` as a promise, so a list works the same whichever storage layer is loaded, and a
+  cell whose field carries `form.datas` shows the matching option's label rather than the stored
+  value (falling back to the value itself when no option matches).
 
 ## Storage
 
