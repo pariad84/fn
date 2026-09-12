@@ -68,14 +68,6 @@
         return el;
     };
 
-    // 2. fn.component.refresh -- removes opt.parent's current children and recreates the named
-    // layout inside it, so the caller.refresh() convention doesn't force every app to reach past
-    // fn.component.create into the DOM just to re-render a list/page in place.
-    fn.component.refresh = function(opt = {}) {
-        Array.from(opt.parent.children).forEach(function(child) { child.remove(); });
-        return fn.component.create(opt);
-    };
-
     // 3. fn.data.select/insert/update/delete -- CRUD abstraction. Every layout below only ever
     // talks to these four functions, so swapping localStorage for a real backend later only
     // means rewriting this block, not any layout.
@@ -122,14 +114,6 @@
         var row = rows.find(function(row) { return row.id === opt.id; });
         fn.data._.write({ key : opt.key, rows : rows.filter(function(row) { return row.id !== opt.id; }) });
         return row;
-    };
-
-    // 4. render escape hatch -- a column can carry a JS source string instead of a fixed type,
-    // so a resource definition (pure data) can extend what a cell/field does without touching
-    // this file. Same mechanism serves both list cells and form fields.
-    fn.render = function(opt = {}) {
-        var render = new Function('return (' + opt.source + ')')();
-        return render(opt.data);
     };
 
     global.fn = fn;

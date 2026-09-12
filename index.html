@@ -34,76 +34,67 @@ built from <code>fn.layout.js</code>'s conventions.</p>
         style : { padding : '8px 16px' },
         parent : app,
         event : { click : function() {
+            var list;
+
             fn.component.create({
-                parent : document.body,
                 name : 'popup',
                 title : 'List',
-                fields : fields,
-                init : function(opt) {
+                parent : document.body,
+                init : function(listOpt) {
                     fn.component.create({
                         name : 'btn-new',
-                        parent : opt.header,
-                        click : function() {
+                        parent : listOpt.header,
+                        event : { click : function() {
                             fn.component.create({
                                 name : 'popup',
                                 title : 'New item',
-                                caller : opt.popup._.caller,
-                                fields : fields,
                                 parent : document.body,
-                                init : function(popupOpt) {
+                                init : function(newOpt) {
                                     fn.component.create({
                                         name : 'btn-save',
-                                        text : '💾',
-                                        parent : popupOpt.header,
-                                        click : function() {
-                                            fn.data.insert({ key : 'item', data : popupOpt.popup.querySelector('.__form').save() });
-                                            if (popupOpt.popup._.caller) {
-                                                popupOpt.popup._.caller.refresh();
-                                            }
-                                            popupOpt.popup.remove();
-                                        },
+                                        parent : newOpt.header,
+                                        event : { click : function() {
+                                            fn.data.insert({ key : 'item', data : newOpt.popup.querySelector('.__form').save() });
+                                            list.refresh();
+                                            newOpt.popup.remove();
+                                        } },
                                     });
                                 },
-                                render : function(popupOpt) {
-                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : {}, parent : popupOpt.content });
+                                render : function(newOpt) {
+                                    fn.component.create({ name : 'form', fields : fields, data : {}, parent : newOpt.content });
                                 },
                             });
-                        },
+                        } },
                     });
                 },
-                render : function(opt) {
-                    opt.popup._.caller = fn.component.create({
+                render : function(listOpt) {
+                    list = fn.component.create({
                         name : 'list',
-                        fields : opt.popup._.fields,
-                        parent : opt.content,
+                        fields : fields,
+                        parent : listOpt.content,
                         select : function() {
                             return fn.data.select({ key : 'item' }).map(function(row) {
                                 return Object.assign({ id : row.id }, row.data);
                             });
                         },
-                        click : function(item, list) {
+                        click : function(rowOpt) {
                             fn.component.create({
                                 name : 'popup',
                                 title : 'Edit item',
-                                caller : list,
-                                fields : fields,
                                 parent : document.body,
-                                init : function(popupOpt) {
+                                init : function(editOpt) {
                                     fn.component.create({
                                         name : 'btn-save',
-                                        text : '💾',
-                                        parent : popupOpt.header,
-                                        click : function() {
-                                            fn.data.update({ key : 'item', id : item.id, data : popupOpt.popup.querySelector('.__form').save() });
-                                            if (popupOpt.popup._.caller) {
-                                                popupOpt.popup._.caller.refresh();
-                                            }
-                                            popupOpt.popup.remove();
-                                        },
+                                        parent : editOpt.header,
+                                        event : { click : function() {
+                                            fn.data.update({ key : 'item', id : rowOpt.item.id, data : editOpt.popup.querySelector('.__form').save() });
+                                            rowOpt.list.refresh();
+                                            editOpt.popup.remove();
+                                        } },
                                     });
                                 },
-                                render : function(popupOpt) {
-                                    fn.component.create({ name : 'form', fields : popupOpt.popup._.fields, data : item, parent : popupOpt.content });
+                                render : function(editOpt) {
+                                    fn.component.create({ name : 'form', fields : fields, data : rowOpt.item, parent : editOpt.content });
                                 },
                             });
                         },
