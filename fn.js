@@ -124,13 +124,5 @@
         return row;
     };
 
-    // 4. render escape hatch -- a column can carry a JS source string instead of a fixed type,
-    // so a resource definition (pure data) can extend what a cell/field does without touching
-    // this file. Same mechanism serves both list cells and form fields.
-    fn.render = function(opt = {}) {
-        var render = new Function('return (' + opt.source + ')')();
-        return render(opt.data);
-    };
-
     global.fn = fn;
 })(window);
