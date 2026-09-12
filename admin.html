@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fn admin console</title>
+</head>
+<body style="font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #1a1a1a;">
+<h1>fn admin console</h1>
+<p>A CRUD console over every resource the server defines. Nothing below names a resource, a field
+or a label: the definitions come from <code>/api/resources</code>, and the same definitions are
+what the server validates writes against -- so adding a resource is a JSON file on the server, not
+a change to this page.</p>
+<div id="app">Loading resource definitions...</div>
+<script src="fn.js"></script>
+<script src="fn.util.js"></script>
+<script src="fn.layout.js"></script>
+<script src="fn.data.remote.js"></script>
+<script>
+
+    var api = 'http://localhost:3000/api';
+    fn.data.remote.url = api + '/data';
+
+    var app = document.getElementById('app');
+
+    // The server rejects a write with the rule this form was rendered from, so its message belongs
+    // beside the form rather than in an alert.
+    function fail(content, error) {
+        var el = content.querySelector('.__error') || fn.element.create({
+            tagName : 'div',
+            attribute : { class : '__error' },
+            style : { marginTop : '8px', padding : '8px 10px', borderRadius : '4px', background : '#fdecec', color : '#a3232d' },
+            parent : content,
+        });
+        el.textContent = error.message;
+    }
+
+    // One popup serves both create and edit -- opt.item is the row being edited, or undefined.
+    function openForm(opt) {
+        fn.component.create({
+            name : 'popup',
+            title : (opt.item ? 'Edit ' : 'New ') + opt.resource.key,
+            parent : document.body,
+            init : function(popupOpt) {
+                fn.component.create({
+                    name : 'btn-save',
+                    parent : popupOpt.header,
+                    event : { click : function() {
+                        var data = popupOpt.popup.querySelector('.__form').save();
+                        var saved = opt.item
+                            ? fn.data.update({ key : opt.resource.key, id : opt.item.id, data : data })
+                            : fn.data.insert({ key : opt.resource.key, data : data });
+                        Promise.resolve(saved).then(function() {
+                            opt.list.refresh();
+                            popupOpt.popup.remove();
+                        }, function(error) { fail(popupOpt.content, error); });
+                    } },
+                });
+
+                if (!opt.item) {
+                    return;
+                }
+                fn.component.create({
+                    name : 'btn-delete',
+                    parent : popupOpt.header,
+                    event : { click : function() {
+                        Promise.resolve(fn.data.delete({ key : opt.resource.key, id : opt.item.id })).then(function() {
+                            opt.list.refresh();
+                            popupOpt.popup.remove();
+                        }, function(error) { fail(popupOpt.content, error); });
+                    } },
+                });
+            },
+            render : function(popupOpt) {
+                fn.component.create({
+                    name : 'form',
+                    fields : opt.resource.fields,
+                    data : opt.item || {},
+                    parent : popupOpt.content,
+                });
+            },
+        });
+    }
+
+    function openList(resource) {
+        var list;
+
+        fn.component.create({
+            name : 'popup',
+            title : resource.label,
+            parent : document.body,
+            init : function(popupOpt) {
+                fn.component.create({
+                    name : 'btn-new',
+                    parent : popupOpt.header,
+                    event : { click : function() { openForm({ resource : resource, list : list }); } },
+                });
+            },
+            render : function(popupOpt) {
+                list = fn.component.create({
+                    name : 'list',
+                    fields : resource.fields,
+                    parent : popupOpt.content,
+                    select : function() {
+                        return Promise.resolve(fn.data.select({ key : resource.key })).then(function(rows) {
+                            return rows.map(function(row) { return Object.assign({ id : row.id }, row.data); });
+                        });
+                    },
+                    click : function(rowOpt) {
+                        openForm({ resource : resource, item : rowOpt.item, list : rowOpt.list });
+                    },
+                });
+            },
+        });
+    }
+
+    fetch(api + '/resources').then(function(response) {
+        return response.json();
+    }).then(function(resources) {
+        app.textContent = '';
+        resources.forEach(function(resource) {
+            fn.component.create({
+                name : 'button',
+                text : resource.label,
+                style : { padding : '8px 16px', marginRight : '8px' },
+                parent : app,
+                event : { click : function() { openList(resource); } },
+            });
+        });
+    }).catch(function(error) {
+        app.textContent = 'Could not load ' + api + '/resources -- is the server running? (' + error.message + ')';
+    });
+
+</script>
+</body>
+</html>

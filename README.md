@@ -23,9 +23,9 @@ supplies -- `init`, `render`, `select`, `click` -- are functions, called with a 
 they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s `click` gets
 `{ item, list }`).
 
-- `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new` are all
-  `fn.component.create({ name : 'button', ... })` calls that just preset text/title and pass
-  `opt.event` through, each default overridable via `opt.text`/`opt.title`.
+- `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new`/
+  `btn-delete` are all `fn.component.create({ name : 'button', ... })` calls that just preset
+  text/title and pass `opt.event` through, each default overridable via `opt.text`/`opt.title`.
 - `popup`/`btn-close` -- `popup` provides the `.__popup` wrapper and header that `btn-close` finds
   via `e.target.closest('.__popup')` and removes directly; it is the one button that acts by
   itself, the rest run their caller's handler. The header is the drag handle
@@ -66,6 +66,25 @@ storage layers, which is what lets one page run against either:
 Promise.resolve(fn.data.select({ key : 'item' })).then(function(rows) { ... });
 ```
 
+A rejected promise carries the server's message, so a page can put it in front of the user:
+
+```js
+Promise.resolve(fn.data.insert({ key : 'item', data : data })).then(saved, function(error) {
+    show(error.message);   // e.g. "Title is required"
+});
+```
+
+## The pages
+
+`index.html` is the framework's own test page: one button, one popup, one list, storing to
+localStorage. Open it directly, no server needed.
+
+`admin.html` is a CRUD console for every resource a server defines, and it needs one running. It
+names no resource, no field and no label of its own -- it fetches the definitions from
+`/api/resources` and hands their `fields` straight to `list` and `form`, which is what those two
+layouts already take. Adding a resource is a JSON file on the server; this page does not change.
+The server validates each write against the same definition it served, so the rule behind a
+rejected save is the rule the form was rendered from, and its message lands beside the form.
 ## Using it
 
 Load `fn.js` as a plain `<script>` tag before your app's own script(s) -- it attaches to the

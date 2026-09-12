@@ -26,7 +26,8 @@
         if (opt.parent) {
             opt.parent.appendChild(el);
         }
-        if (opt.text) {
+        // Not a truthiness test: a list cell showing a stored 0 or false is text, not an empty cell.
+        if (opt.text !== undefined && opt.text !== null) {
             el.textContent = opt.text;
         }
         if (opt.value !== undefined) {

@@ -130,6 +130,18 @@
     });
 
     fn.component.layout.set({
+        name : 'btn-delete',
+        layout : function(opt = {}) {
+            return fn.component.create({
+                name : 'button',
+                attribute : { title : opt.title || 'Delete' },
+                text : opt.text || '🗑️',
+                event : opt.event,
+            });
+        }
+    });
+
+    fn.component.layout.set({
         name : 'input',
         layout : function(opt = {}) {
             return fn.element.create({
