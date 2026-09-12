@@ -87,11 +87,7 @@ describe('fn.element.create', function() {
         }), 'object');
     });
 
-    // --- Defects. Written as todo: they run, they fail, and the run stays green until they are
-    // fixed. Remove the todo flag with the fix.
-
     it('rejects an opt with no tagName instead of building <undefined>',
-        { todo : 'creates <undefined> silently, where fn.component.create throws on a bad name' },
         async function() {
             const page = await fn.page();
             const result = await page.evaluate(function() {
@@ -105,7 +101,6 @@ describe('fn.element.create', function() {
         });
 
     it('fills the element before putting it in the document',
-        { todo : 'appends first, so the element enters the document empty and is then mutated' },
         async function() {
             const page = await fn.page();
             const textAtAppend = await page.evaluate(function() {
@@ -125,7 +120,6 @@ describe('fn.element.create', function() {
         });
 
     it('does not retain the caller opt on every element',
-        { todo : 'el._.opt/_.data/_.datas are written and never read, and hold the parent node and handlers' },
         async function() {
             const page = await fn.page();
             const kept = await page.evaluate(function() {

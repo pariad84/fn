@@ -84,10 +84,7 @@ describe('fn.component', function() {
         assert.match(message, /missing/);
     });
 
-    // --- Defect.
-
     it('set and get do not depend on being called as a method',
-        { todo : 'both use `this`, where the rest of the file goes through the fn. prefix' },
         async function() {
             const page = await fn.page();
             const result = await page.evaluate(function() {

@@ -19,7 +19,6 @@ describe('fn.data (localStorage backing)', function() {
     });
 
     it('insert never reuses the id of a deleted row',
-        { todo : 'the next id is max(id) + 1 over the rows that remain, so deleting the last row hands its id to the next insert -- an edit popup still open on the old row then overwrites the new one. The server backing, on a database sequence, never reuses.' },
         async function() {
             const page = await fn.page();
             assert.deepEqual(await page.evaluate(function() {
@@ -100,11 +99,26 @@ describe('fn.data (localStorage backing)', function() {
         }), 1);
     });
 
-    // --- Defects. All three are in fn.data._.read/_.write -- the one block the README says is all
-    // you rewrite to swap the storage layer, and the only place in fn.js with any defensive code.
+    it('reads a key still holding the older bare array of rows', async function() {
+        const page = await fn.page();
+        assert.deepEqual(await page.evaluate(function() {
+            localStorage.setItem('k', JSON.stringify([{ id : 1, data : { a : 1 } }, { id : 2, data : { a : 2 } }]));
+            return fn.data.select({ key : 'k' });
+        }), [{ id : 1, data : { a : 1 } }, { id : 2, data : { a : 2 } }]);
+    });
+
+    it('carries ids on from where an older bare array left off', async function() {
+        const page = await fn.page();
+        assert.equal(await page.evaluate(function() {
+            localStorage.setItem('k', JSON.stringify([{ id : 4, data : {} }]));
+            return fn.data.insert({ key : 'k', data : {} }).id;
+        }), 5);
+    });
+
+    // fn.data._.read/_.write is the one block the README says is all you rewrite to swap the
+    // storage layer, so it is also the only place that can decide what a failed read or write does.
 
     it('delete of an id that is not there writes nothing',
-        { todo : 'rewrites the key regardless, where update only writes when it found the row' },
         async function() {
             const page = await fn.page();
             assert.equal(await page.evaluate(function() {
@@ -119,7 +133,6 @@ describe('fn.data (localStorage backing)', function() {
         });
 
     it('a corrupt value does not take the page down',
-        { todo : 'JSON.parse is unguarded, so one bad key throws out of every select on the page' },
         async function() {
             const page = await fn.page();
             const result = await page.evaluate(function() {
@@ -134,7 +147,6 @@ describe('fn.data (localStorage backing)', function() {
         });
 
     it('storage the browser refuses does not throw out of fn.data',
-        { todo : 'typeof(Storage) only proves the constructor exists; access still throws SecurityError when site data is blocked' },
         async function() {
             const page = await fn.page();
             const result = await page.evaluate(function() {
@@ -153,7 +165,6 @@ describe('fn.data (localStorage backing)', function() {
         });
 
     it('a failed write reaches the caller through the Promise.resolve convention',
-        { todo : 'the write throws synchronously, so it escapes Promise.resolve(...).then(ok, fail) -- the two storage layers do not behave alike on error, contrary to the README' },
         async function() {
             const page = await fn.page();
             const outcome = await page.evaluate(async function() {
