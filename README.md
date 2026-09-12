@@ -5,7 +5,8 @@ A minimal framework core: a single file, `fn.js`, providing three essentials --
 1. `fn.element.create` -- the one DOM-builder primitive everything else is built from.
 2. `fn.component.layout.set/get/create` -- a named-layout registry/dispatcher.
 3. `fn.data.select/insert/update/delete` -- a CRUD abstraction (localStorage-backed here;
-   swapping the storage layer only means rewriting these four functions).
+   swapping the storage layer only means rewriting these four functions -- `fn.data.remote.js`
+   is that rewrite, against a server).
 
 `fn.js` knows nothing about any specific app: it never references a resource key, a field name,
 or a UI label. It also doesn't give you `popup`/`form`/`list`/etc. on its own -- those are
@@ -22,9 +23,9 @@ supplies -- `init`, `render`, `select`, `click` -- are functions, called with a 
 they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s `click` gets
 `{ item, list }`).
 
-- `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new` are all
-  `fn.component.create({ name : 'button', ... })` calls that just preset text/title and pass
-  `opt.event` through, each default overridable via `opt.text`/`opt.title`.
+- `button` -- the base `<button type="button">` layout; `btn-close`/`btn-save`/`btn-new`/
+  `btn-delete` are all `fn.component.create({ name : 'button', ... })` calls that just preset
+  text/title and pass `opt.event` through, each default overridable via `opt.text`/`opt.title`.
 - `popup`/`btn-close` -- `popup` provides the `.__popup` wrapper and header that `btn-close` finds
   via `e.target.closest('.__popup')` and removes directly; it is the one button that acts by
   itself, the rest run their caller's handler. The header is the drag handle
@@ -37,12 +38,63 @@ they carry anything (`init`/`render` get `{ popup, header, content }`, `list`'s 
 - `form`/`list` -- a schema-driven form (one row per field; `form.save()` just collects and returns
   field values, it doesn't persist them) and a table-based list (one row per item, fetched via the
   caller-supplied `opt.select()`, each row's click calling the caller-supplied
-  `opt.click({ item, list })`) built on top of those field layouts.
+  `opt.click({ item, list })`) built on top of those field layouts. `list.refresh()` resolves
+  `opt.select()` as a promise, so a list works the same whichever storage layer is loaded, and a
+  cell whose field carries `form.datas` shows the matching option's label rather than the stored
+  value (falling back to the value itself when no option matches).
 
+## Storage
+
+`fn.js` stores rows in localStorage. `fn.data.remote.js` is a drop-in replacement: load it after
+`fn.js` and the same four functions talk to a server instead -- no layout and no app code knows
+which one is loaded. Point it at your server before the first call:
+
+```html
+<script src="fn.js"></script>
+<script src="fn.data.remote.js"></script>
+<script>fn.data.remote.url = 'http://localhost:3000/api/data';</script>
+```
+
+It expects one endpoint per resource, addressing `fn.data`'s `key` in the path and speaking
+`fn.data`'s `{ id, data }` rows in the body -- `GET|POST /:key`, `GET|PUT|DELETE /:key/:id`, with a
+write body of `{ "data": { ... } }` and `404` for a row that isn't there. The `server` repo's
+`/api/data/:resource` implements exactly this.
+
+**The one convention this imposes:** the four functions may answer with a value or with a promise,
+so whatever consumes a result goes through `Promise.resolve()`. That reads the same for both
+storage layers, which is what lets one page run against either:
+
+```js
+Promise.resolve(fn.data.select({ key : 'item' })).then(function(rows) { ... });
+```
+
+A rejected promise carries the server's message, so a page can put it in front of the user:
+
+```js
+Promise.resolve(fn.data.insert({ key : 'item', data : data })).then(saved, function(error) {
+    show(error.message);   // e.g. "Title is required"
+});
+```
+
+## The pages
+
+`index.html` is the framework's own test page: one button, one popup, one list, storing to
+localStorage. Open it directly, no server needed.
+
+`admin.html` is a CRUD console for every resource a server defines, and it needs one running. It
+names no resource, no field and no label of its own -- it fetches the definitions from
+`/api/resources` and hands their `fields` straight to `list` and `form`, which is what those two
+layouts already take. Adding a resource is a JSON file on the server; this page does not change.
+The server validates each write against the same definition it served, so the rule behind a
+rejected save is the rule the form was rendered from, and its message lands beside the form.
 ## Using it
 
 Load `fn.js` as a plain `<script>` tag before your app's own script(s) -- it attaches to the
 global `fn` object. No build step, no dependencies. `fn.util.js` and `fn.layout.js` are both
 optional and load after `fn.js` (`fn.layout.js` needs `fn.util.js` loaded first, for
 `fn.util.draggable`): `fn.util.js` for small DOM helpers, `fn.layout.js` for themeable
-`popup`/`form`/`list`/etc. reference implementations instead of writing your own from scratch.
+`popup`/`form`/`list`/etc. reference implementations instead of writing your own from scratch, and
+`fn.data.remote.js` to put the rows on a server instead of in localStorage.
+
+`index.html` is a working page built from those conventions -- open it directly, no server needed.
+Uncomment its `fn.data.remote.js` tag to run the same page against a backend.
